@@ -1,0 +1,20 @@
+# systemd *user* service that keeps the built app running on 127.0.0.1:4173.
+# Install:
+#   mkdir -p ~/.config/systemd/user
+#   cp deploy/wod-timer.service ~/.config/systemd/user/
+#   # edit WorkingDirectory below if the project lives elsewhere
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now wod-timer
+#   sudo loginctl enable-linger $USER   # keep it running when you're logged out
+[Unit]
+Description=WOD Timer (vite preview + Gemini proxy)
+After=network-online.target
+
+[Service]
+WorkingDirectory=%h/orel_ws/personal/workout_timer
+ExecStart=/usr/bin/env npm run serve
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

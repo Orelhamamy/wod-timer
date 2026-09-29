@@ -1,0 +1,16 @@
+{
+  "name": "wod-timer",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "serve": "vite build && vite preview",
+    "icons": "python3 scripts/gen_icons.py"
+  },
+  "devDependencies": {
+    "vite": "^7.1.0"
+  }
+}

@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#0b0d10" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="WOD Timer" />
+    <meta name="format-detection" content="telephone=no" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+    <title>WOD Timer</title>
+  </head>
+  <body>
+    <div id="app">
+      <header class="topbar">
+        <h1 class="brand"><span class="brand-mark">●</span> WOD Timer</h1>
+        <span class="net-status" id="net-status" hidden>Offline</span>
+      </header>
+
+      <main class="views">
+        <!-- ============ WOD VIEW ============ -->
+        <section class="view" id="view-wod" data-view="wod">
+          <details class="card gen-panel" id="gen-panel" open>
+            <summary><span>New WOD</span><span class="chev" aria-hidden="true">▾</span></summary>
+
+            <form id="gen-form" class="gen-form" autocomplete="off">
+              <fieldset>
+                <legend>Work time <span class="hint">total minutes, split across parts</span></legend>
+                <div class="chips" data-name="duration">
+                  <button type="button" class="chip" data-value="8">8</button>
+                  <button type="button" class="chip" data-value="10">10</button>
+                  <button type="button" class="chip" data-value="12">12</button>
+                  <button type="button" class="chip" data-value="15">15</button>
+                  <button type="button" class="chip" data-value="20">20</button>
+                  <button type="button" class="chip" data-value="25">25</button>
+                  <button type="button" class="chip" data-value="30">30</button>
+                  <button type="button" class="chip" data-value="40">40</button>
+                </div>
+              </fieldset>
+
+              <fieldset>
+                <legend>Muscle focus <span class="hint">pick any, or none for coach's choice</span></legend>
+                <div class="chips" data-name="focus" data-multi>
+                  <button type="button" class="chip" data-value="Full Body">Full Body</button>
+                  <button type="button" class="chip" data-value="Back">Back</button>
+                  <button type="button" class="chip" data-value="Posterior Chain">Posterior Chain</button>
+                  <button type="button" class="chip" data-value="Shoulders">Shoulders</button>
+                  <button type="button" class="chip" data-value="Chest">Chest</button>
+                  <button type="button" class="chip" data-value="Legs">Legs</button>
+                  <button type="button" class="chip" data-value="Glutes">Glutes</button>
+                  <button type="button" class="chip" data-value="Arms">Arms</button>
+                  <button type="button" class="chip" data-value="Core">Core</button>
+                  <button type="button" class="chip" data-value="Conditioning">Conditioning</button>
+                </div>
+              </fieldset>
+
+              <fieldset>
+                <legend>Structure</legend>
+                <div class="chips segmented" data-name="partCount">
+                  <button type="button" class="chip" data-value="1">Single WOD</button>
+                  <button type="button" class="chip" data-value="2">2 parts</button>
+                  <button type="button" class="chip" data-value="3">3 parts</button>
+                </div>
+              </fieldset>
+
+              <!-- One format picker per part, rendered by main.js -->
+              <div id="part-formats" class="part-formats"></div>
+
+              <label class="switch-row">
+                <span>Tabata core finisher <span class="hint">4 min</span></span>
+                <input type="checkbox" id="gen-finisher" class="switch" checked />
+              </label>
+
+              <label class="field">
+                <span class="field-label">Notes for the coach <span class="hint">optional</span></span>
+                <textarea id="gen-notes" rows="2" placeholder="e.g. left knee is sore, no jumping today"></textarea>
+              </label>
+
+              <div class="gen-actions">
+                <button type="submit" class="btn primary big" id="gen-btn">
+                  <span class="btn-label">Generate WOD</span>
+                </button>
+                <button type="button" class="btn ghost" id="gen-cancel" hidden>Cancel</button>
+              </div>
+            </form>
+          </details>
+
+          <div id="gen-error" class="alert" role="alert" hidden></div>
+
+          <div id="wod-empty" class="empty">
+            <p class="empty-title">No workout yet</p>
+            <p>Pick a length and focus, then tap <strong>Generate WOD</strong>.</p>
+          </div>
+
+          <div id="wod-result" hidden></div>
+        </section>
+
+        <!-- ============ HISTORY VIEW ============ -->
+        <section class="view" id="view-history" data-view="history" hidden>
+          <div class="view-head">
+            <h2>History</h2>
+            <button type="button" class="btn ghost small" id="history-clear">Clear all</button>
+          </div>
+          <p class="muted small-text">
+            Completed workouts are sent to the coach so it can balance muscle groups and avoid repeats.
+          </p>
+          <ul class="history-list" id="history-list"></ul>
+        </section>
+
+        <!-- ============ SETTINGS VIEW ============ -->
+        <section class="view" id="view-settings" data-view="settings" hidden>
+          <div class="view-head"><h2>Settings</h2></div>
+
+          <div class="card">
+            <h3>AI provider</h3>
+            <div class="chips segmented" id="provider-chips">
+              <button type="button" class="chip" data-value="gemini">Gemini</button>
+              <button type="button" class="chip" data-value="openai">OpenAI (ChatGPT)</button>
+            </div>
+            <label class="field-row">
+              <span>Model</span>
+              <input type="text" id="model-input" spellcheck="false" autocapitalize="off" autocorrect="off" />
+            </label>
+            <label class="field-row">
+              <span>Thinking effort</span>
+              <select data-setting="thinkingLevel">
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+                <option value="minimal">Minimal</option>
+                <option value="">Model default</option>
+              </select>
+            </label>
+            <label class="field-row">
+              <span>Past workouts to send</span>
+              <input type="number" min="0" max="15" inputmode="numeric" data-setting="historyInPrompt" />
+            </label>
+
+            <div class="field-label key-label" id="apikey-label">API key</div>
+            <p class="muted small-text">
+              <span id="apikey-hint"></span>
+              Create one at <a id="apikey-link" href="#" target="_blank" rel="noopener"></a>.
+            </p>
+            <div class="inline-form">
+              <input type="password" id="apikey-input" placeholder="Paste your key" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" />
+              <button type="button" class="btn" id="apikey-toggle">Show</button>
+            </div>
+            <div class="row-actions">
+              <button type="button" class="btn ghost" id="apikey-test">Test</button>
+              <button type="button" class="btn primary" id="apikey-save">Save</button>
+            </div>
+            <p class="status-note" id="apikey-status" hidden></p>
+          </div>
+
+          <div class="card">
+            <h3>Equipment</h3>
+            <p class="muted small-text">The coach only programs with what's listed here.</p>
+            <ul class="tag-list" id="equipment-list"></ul>
+            <form class="inline-form" id="equipment-form">
+              <input type="text" id="equipment-input" placeholder="Add equipment, e.g. Pull-up bar" />
+              <button type="submit" class="btn">Add</button>
+            </form>
+          </div>
+
+          <div class="card">
+            <h3>Coach instructions</h3>
+            <p class="muted small-text">
+              The system prompt sent to the AI coach. The app adds the JSON output rules and your equipment list automatically.
+            </p>
+            <textarea id="instructions-input" class="mono" rows="14" spellcheck="false"></textarea>
+            <div class="row-actions">
+              <button type="button" class="btn ghost" id="instructions-reset">Reset to default</button>
+              <button type="button" class="btn primary" id="instructions-save">Save</button>
+            </div>
+            <p class="saved-note" id="instructions-saved" hidden>Saved</p>
+          </div>
+
+          <div class="card">
+            <h3>Timer</h3>
+            <label class="switch-row"><span>Beeps</span><input type="checkbox" class="switch" data-setting="beeps" /></label>
+            <label class="switch-row"><span>Voice callouts</span><input type="checkbox" class="switch" data-setting="voice" /></label>
+            <label class="field-row">
+              <span>Get-ready countdown <span class="hint">sec</span></span>
+              <input type="number" min="0" max="60" inputmode="numeric" data-setting="prepSeconds" />
+            </label>
+            <label class="field-row">
+              <span>Rest between parts <span class="hint">sec</span></span>
+              <input type="number" min="0" max="600" inputmode="numeric" data-setting="transitionSeconds" />
+            </label>
+            <button type="button" class="btn ghost" id="test-sounds">Test sounds</button>
+          </div>
+
+          <div class="card">
+            <h3>Backup &amp; transfer</h3>
+            <p class="muted small-text">
+              Saves your workout history, equipment, coach instructions and timer settings to a file. Import it on another
+              phone or a new copy of the app. Your API key is never included.
+            </p>
+            <div class="row-actions start">
+              <button type="button" class="btn" id="backup-export">Export</button>
+              <button type="button" class="btn" id="backup-import">Import</button>
+              <input type="file" id="backup-file" accept="application/json,.json" hidden />
+            </div>
+            <p class="status-note" id="backup-status" hidden></p>
+          </div>
+        </section>
+      </main>
+
+      <nav class="tabbar" aria-label="Sections">
+        <button type="button" class="tab active" data-tab="wod"><span class="tab-icon">⏱</span>WOD</button>
+        <button type="button" class="tab" data-tab="history"><span class="tab-icon">☰</span>History</button>
+        <button type="button" class="tab" data-tab="settings"><span class="tab-icon">⚙</span>Settings</button>
+      </nav>
+    </div>
+
+    <!-- ============ WORKOUT MODE ============ -->
+    <section class="workout" id="workout" data-state="prep" hidden>
+      <header class="wo-top">
+        <div>
+          <div class="wo-phase" id="wo-phase">Get Ready</div>
+          <div class="wo-sub" id="wo-sub"></div>
+        </div>
+        <button type="button" class="wo-icon-btn" id="wo-close" aria-label="End workout">✕</button>
+      </header>
+
+      <div class="wo-clock" id="wo-clock">0:10</div>
+      <div class="wo-meta" id="wo-meta"></div>
+      <div class="wo-progress"><div class="wo-bar" id="wo-bar"></div></div>
+
+      <button type="button" class="wo-move" id="wo-move">
+        <span class="wo-move-label" id="wo-move-label">Now</span>
+        <span class="wo-reps" id="wo-reps"></span>
+        <span class="wo-name" id="wo-name"></span>
+        <span class="wo-weight" id="wo-weight"></span>
+        <span class="wo-tap-hint" id="wo-tap-hint">Tap when done ▸</span>
+      </button>
+      <div class="wo-next" id="wo-next"></div>
+
+      <ol class="wo-list" id="wo-list"></ol>
+
+      <footer class="wo-controls">
+        <button type="button" class="wo-btn" id="wo-prev" aria-label="Previous movement">◀</button>
+        <button type="button" class="wo-btn primary" id="wo-toggle">Pause</button>
+        <button type="button" class="wo-btn" id="wo-fwd" aria-label="Next movement">▶</button>
+        <button type="button" class="wo-btn" id="wo-done">Done</button>
+        <button type="button" class="wo-btn" id="wo-skip">Skip</button>
+      </footer>
+    </section>
+
+    <!-- ============ SUMMARY ============ -->
+    <dialog id="summary" class="summary">
+      <form method="dialog" class="summary-body">
+        <h2 id="summary-title">Workout complete</h2>
+        <ul class="summary-results" id="summary-results"></ul>
+        <label class="field">
+          <span class="field-label">How did it feel? <span class="hint">optional, the coach will see it</span></span>
+          <textarea id="summary-note" rows="2" placeholder="e.g. RPE 8, swings felt heavy"></textarea>
+        </label>
+        <div class="row-actions">
+          <button type="button" class="btn ghost" id="summary-discard">Discard</button>
+          <button type="button" class="btn primary" id="summary-save">Save to history</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
