@@ -82,6 +82,9 @@ function piecePhase(piece, label) {
       }));
       base.intervals.forEach((iv) => {
         if (iv.start > 0) cues.add(iv.start, 'go', `Minute ${iv.start / 60 + 1}. ${movementText(piece.movements[iv.movementIndex])}`);
+        // Every minute: half-minute beep at :30 and a 10-second warning at :50 (beeps only).
+        cues.add(iv.start + 30, 'half');
+        cues.add(iv.start + 50, 'tenSec');
         countdownTicks(cues, iv.start + iv.duration);
       });
       wholePhaseCues(cues, base.duration, { tenSec: false });

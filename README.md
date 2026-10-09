@@ -116,7 +116,7 @@ Tweaking a WOD continues the same conversation, even if you switch providers in 
   - EMOM switches movements every minute.
   - Tabata runs 20 s work / 10 s rest × 8.
   - The run order is: get-ready countdown, Part 1, rest, Part 2, and so on, then rest and the finisher. Set the rest length under **Settings → Rest between parts**. The screen stays awake.
-- **Sounds:** halfway, last minute, 10 seconds, and 3-2-1 beeps before every interval or phase ends, plus spoken callouts such as "Minute 5. 12 Burpees". Use **Settings → Test sounds** to check the volume.
+- **Sounds:** halfway, last minute, 10 seconds, and 3-2-1 beeps before every interval or phase ends. EMOMs also beep at :30 and :50 of every minute and on each new minute, plus spoken callouts such as "Minute 5. 12 Burpees". Use **Settings → Test sounds** to check the volume.
 
 ## Response format
 
@@ -161,7 +161,7 @@ deploy/wod-timer.service systemd user unit (self-hosted mode)
 
 ## Notes
 
-- **iOS audio:** sounds unlock when you tap Start. The app sets `navigator.audioSession.type = 'transient'` so beeps play over your music. If the phone's silent switch still mutes them, that's iOS policy.
+- **Music + audio:** the app sets `navigator.audioSession.type = 'ambient'` (Safari 17+), so beeps mix with Spotify / Apple Music instead of pausing it. The trade-off is that the silent switch mutes the beeps, so keep the ringer on while training. Voice callouts use iOS speech, which can pause other apps' music. If your music stops when a callout plays, turn off **Settings → Voice callouts**; the beeps still cover every cue.
 - **Locked screen:** iOS pauses JavaScript while the phone is locked. The timer tracks real elapsed time, so it is still correct when you unlock, but no beeps play while the phone is locked. Wake Lock keeps the screen on during a workout.
 - **Offline:** once the app has loaded, you can open it and run the saved WODs without a connection. If the host doesn't answer within 3 seconds, the cached copy opens. Generating or tweaking a WOD needs the internet (and, in self-hosted mode, the zbook).
 - **Data:** history lives in the home-screen app's local storage. Deleting the app deletes the history.

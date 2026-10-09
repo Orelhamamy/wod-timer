@@ -437,7 +437,7 @@ function releaseWakeLock() {
 }
 
 function startWorkout(entry) {
-  unlockAudio(); // must run inside the tap
+  unlockAudio({ speech: state.settings.voice }); // must run inside the tap
   const phases = buildPlan(entry.wod, state.settings);
   const timer = new WorkoutTimer(phases, {
     onCue: (cue) => {
@@ -561,7 +561,7 @@ function renderWorkout() {
 }
 
 wo.toggle.addEventListener('click', () => {
-  unlockAudio();
+  unlockAudio({ speech: state.settings.voice });
   session?.timer.toggle();
   renderWorkout();
 });
@@ -817,7 +817,7 @@ function bindSettingInputs() {
 }
 
 $('#test-sounds').addEventListener('click', () => {
-  unlockAudio();
+  unlockAudio({ speech: state.settings.voice });
   const seq = ['half', 'lastMinute', 'tenSec', 'tick', 'tick', 'tick', 'go', 'rest', 'end'];
   seq.forEach((type, i) => setTimeout(() => beep(type), i * 900));
   if (state.settings.voice) speak('Halfway. One minute left. Ten seconds.');

@@ -735,13 +735,14 @@ textarea.mono {
 
 .workout {
   --state: var(--accent);
+  --wo-bg: var(--bg);
   position: fixed;
   inset: 0;
   z-index: 50;
   display: flex;
   flex-direction: column;
   padding: calc(var(--safe-top) + 12px) 16px calc(var(--safe-bottom) + 12px);
-  background: var(--bg);
+  background: var(--wo-bg);
   overflow-y: auto;
   transition: background-color 0.3s;
 }
@@ -751,7 +752,7 @@ textarea.mono {
 .workout[data-state='rest'],
 .workout[data-state='interval-rest'] {
   --state: var(--rest);
-  background: #07101d;
+  --wo-bg: #07101d;
 }
 .workout[data-state='work'] {
   --state: var(--work);
@@ -921,10 +922,17 @@ textarea.mono {
 }
 
 .wo-controls {
+  /* Stays visible when the movement list is long enough to scroll. */
+  position: sticky;
+  bottom: 0;
   margin-top: auto;
   display: flex;
   gap: 8px;
   padding-top: 8px;
+  background: var(--wo-bg);
+  /* Covers the strip below the buttons so scrolled list items don't show through. */
+  box-shadow: 0 calc(var(--safe-bottom) + 12px) 0 var(--wo-bg);
+  transition: background-color 0.3s, box-shadow 0.3s;
 }
 .wo-btn {
   flex: 1;
@@ -998,9 +1006,12 @@ textarea.mono {
       'clock move'
       'meta next'
       'bar bar'
+      'list list'
       'controls controls';
+    grid-template-rows: auto auto auto auto 1fr auto;
     column-gap: 16px;
-    align-content: start;
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
   }
   .wo-top { grid-area: top; }
   .wo-clock { grid-area: clock; font-size: 22vh; align-self: center; }
@@ -1008,6 +1019,7 @@ textarea.mono {
   .wo-progress { grid-area: bar; }
   .wo-move { grid-area: move; }
   .wo-next { grid-area: next; }
-  .wo-list { display: none; }
+  .wo-list { grid-area: list; margin: 4px 0 8px; }
+  .wo-move { padding: 10px 14px; }
   .wo-controls { grid-area: controls; }
 }

@@ -3,18 +3,25 @@
 
 let ctx = null;
 
-export function unlockAudio() {
+// 'ambient' mixes with music from other apps (Spotify, Apple Music) instead of
+// pausing it (Safari 17+). It must be set before the AudioContext starts.
+// Trade-off: the iPhone's silent switch mutes ambient sound.
+function useMixableAudioSession() {
+  try {
+    if (navigator.audioSession) navigator.audioSession.type = 'ambient';
+  } catch {
+    /* unsupported */
+  }
+}
+useMixableAudioSession();
+
+/** @param {{speech?: boolean}} opts  speech: also prepare voice callouts (only when they're on). */
+export function unlockAudio({ speech = false } = {}) {
+  useMixableAudioSession();
   const AC = window.AudioContext || window.webkitAudioContext;
   if (!AC) return;
   if (!ctx) ctx = new AC();
   if (ctx.state === 'suspended') ctx.resume();
-
-  // Mix with the user's music instead of stopping it (Safari 17+).
-  try {
-    if (navigator.audioSession) navigator.audioSession.type = 'transient';
-  } catch {
-    /* unsupported */
-  }
 
   // A silent buffer fully unlocks output on older iOS versions.
   const buffer = ctx.createBuffer(1, 1, 22050);
@@ -23,8 +30,9 @@ export function unlockAudio() {
   src.connect(ctx.destination);
   src.start(0);
 
-  // Prime speech synthesis inside the gesture too.
-  if ('speechSynthesis' in window) {
+  // Prime speech synthesis inside the gesture too. Skipped when voice is off,
+  // because iOS speech can interrupt other apps' music.
+  if (speech && 'speechSynthesis' in window) {
     const u = new SpeechSynthesisUtterance(' ');
     u.volume = 0;
     speechSynthesis.speak(u);
